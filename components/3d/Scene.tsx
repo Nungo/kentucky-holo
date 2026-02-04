@@ -21,13 +21,13 @@ export function Scene() {
           antialias: true 
         }}
       >
-        {/* PURE BLACK BACKGROUND FOR HOLOGRAM */}
-        <color attach="background" args={mode === 'day' ? ['#87ceeb'] : ['#000000']} />
+        {/* DARK BLUE/GREY BACKGROUND FOR NIGHT (better contrast than pure black) */}
+        <color attach="background" args={mode === 'day' ? ['#87ceeb'] : ['#0a0a1e']} />
         
         <PerspectiveCamera makeDefault position={[0, 0, 6]} />
         <OrbitControls enableZoom={false} enablePan={false} />
         
-        {/* Conditional lighting based on mode */}
+        {/* Conditional lighting */}
         {mode === 'day' ? <DayScene /> : <NightScene />}
         
         {/* Stars only visible at night */}

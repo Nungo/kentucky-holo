@@ -3,9 +3,9 @@
 import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Mesh } from 'three';
+import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 import { useAppStore } from '@/store/useAppStore';
-import * as THREE from 'three';
 import { useStoryStore } from '@/store/useStoryStore';
 
 interface FloatingBucketProps {
@@ -24,10 +24,10 @@ export function FloatingBucket({ onClick, discovered = true }: FloatingBucketPro
     if (meshRef.current) {
       meshRef.current.rotation.y += 0.01;
       
-      // MOVE UP when story is active (so it's visible above popup)
+      // MOVE UP when story is active
       const targetY = currentStory && mode === 'night' 
-        ? Math.sin(state.clock.elapsedTime) * 0.3 + 2  // Move up by 2 units
-        : Math.sin(state.clock.elapsedTime) * 0.3;     // Normal position
+        ? Math.sin(state.clock.elapsedTime) * 0.3 + 2
+        : Math.sin(state.clock.elapsedTime) * 0.3;
       
       meshRef.current.position.y = THREE.MathUtils.lerp(
         meshRef.current.position.y,
@@ -56,6 +56,13 @@ export function FloatingBucket({ onClick, discovered = true }: FloatingBucketPro
     }
   };
 
+  // DIFFERENT COLORS FOR DAY VS NIGHT
+  const bucketColor = mode === 'night' 
+    ? (discovered ? "#3a3a3a" : "#999999")  // Dark grey for night (with contrast)
+    : (discovered ? "#ffffff" : "#999999"); // White/light for day
+  
+  const rimColor = mode === 'night' ? "#4a4a4a" : "#f5f5f5";
+
   return (
     <group
       ref={meshRef}
@@ -63,11 +70,11 @@ export function FloatingBucket({ onClick, discovered = true }: FloatingBucketPro
       onPointerOver={() => onClick && setHovered(true)}
       onPointerOut={() => onClick && setHovered(false)}
     >
-      {/* Main bucket body - DARK GREY/BLACK */}
+      {/* Main bucket body - CHANGES COLOR BASED ON MODE */}
       <mesh position={[0, 0, 0]} castShadow>
         <cylinderGeometry args={[1.2, 1, 2, 32]} />
         <meshStandardMaterial 
-          color={discovered ? "#2a2a2a" : "#999999"}
+          color={bucketColor}
           metalness={0.1}
           roughness={0.4}
         />
@@ -124,11 +131,11 @@ export function FloatingBucket({ onClick, discovered = true }: FloatingBucketPro
         KFC
       </Text>
 
-      {/* Bucket rim - DARK GREY */}
+      {/* Bucket rim */}
       <mesh position={[0, 1, 0]}>
         <cylinderGeometry args={[1.3, 1.25, 0.15, 32]} />
         <meshStandardMaterial 
-          color="#3a3a3a"
+          color={rimColor}
           metalness={0.2}
           roughness={0.3}
         />
@@ -137,10 +144,10 @@ export function FloatingBucket({ onClick, discovered = true }: FloatingBucketPro
       {/* Night mode - STRONG RED GLOW */}
       {mode === 'night' && (
         <>
-          <pointLight position={[0, 0, 1.5]} intensity={1.5} color="#e4002b" distance={3} />
-          <pointLight position={[0, 0, -1.5]} intensity={1.2} color="#ff6b8a" distance={2.5} />
-          <pointLight position={[0, 1.2, 0]} intensity={0.8} color="#e4002b" distance={2} />
-          <pointLight position={[0, -1, 0]} intensity={0.6} color="#e4002b" distance={2} />
+          <pointLight position={[0, 0, 1.5]} intensity={1.8} color="#e4002b" distance={3.5} />
+          <pointLight position={[0, 0, -1.5]} intensity={1.5} color="#ff6b8a" distance={3} />
+          <pointLight position={[0, 1.2, 0]} intensity={1.0} color="#e4002b" distance={2.5} />
+          <pointLight position={[0, -1, 0]} intensity={0.8} color="#e4002b" distance={2.5} />
         </>
       )}
 
