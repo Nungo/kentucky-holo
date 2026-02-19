@@ -5,154 +5,58 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { Text } from '@react-three/drei';
 
-// Large animated chicken drumstick for hologram
+// LARGE KFC Bucket (More recognizable than chicken)
 export function HologramCharacter() {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
     if (groupRef.current) {
-      // Rotate and float
-      groupRef.current.rotation.y += 0.02;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.5;
+      groupRef.current.rotation.y += 0.03;
+      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.8;
       
-      // Gentle scale pulse
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.1;
+      const scale = 1.5 + Math.sin(state.clock.elapsedTime * 2) * 0.2;
       groupRef.current.scale.set(scale, scale, scale);
     }
   });
 
   return (
     <group ref={groupRef}>
-      {/* LARGE Chicken Drumstick */}
-      
-      {/* Drumstick bone (white stick) */}
-      <mesh position={[0, 1.2, 0]}>
-        <cylinderGeometry args={[0.15, 0.1, 1, 16]} />
-        <meshStandardMaterial 
-          color="#f5f5dc"
-          metalness={0.1}
-          roughness={0.6}
-        />
-      </mesh>
-
-      {/* Drumstick meat (golden brown) */}
-      <mesh position={[0, 0.3, 0]}>
-        <sphereGeometry args={[0.8, 32, 32]} />
-        <meshStandardMaterial 
-          color="#d4a574"
-          metalness={0.2}
-          roughness={0.5}
-        />
-      </mesh>
-
-      {/* Crispy coating bumps */}
-      {[...Array(12)].map((_, i) => {
-        const angle = (i / 12) * Math.PI * 2;
-        const radius = 0.75;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-        
-        return (
-          <mesh 
-            key={i} 
-            position={[x, 0.3 + Math.sin(i) * 0.2, z]}
-          >
-            <sphereGeometry args={[0.12, 16, 16]} />
-            <meshStandardMaterial 
-              color="#c49563"
-              roughness={0.8}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* Glowing "KFC" text on drumstick */}
-      <Text
-        position={[0, 0.3, 0.85]}
-        fontSize={0.25}
-        color="#e4002b"
-        anchorX="center"
-        anchorY="middle"
-        fontWeight="bold"
-      >
-        KFC
-      </Text>
-
-      {/* Sparkles around drumstick */}
-      {[...Array(8)].map((_, i) => {
-        const angle = (i / 8) * Math.PI * 2;
-        const radius = 1.5;
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-        const y = Math.sin(i * 0.5) * 0.5;
-        
-        return (
-          <mesh key={`sparkle-${i}`} position={[x, y, z]}>
-            <sphereGeometry args={[0.08, 8, 8]} />
-            <meshBasicMaterial 
-              color="#ffd700"
-              transparent
-              opacity={0.8}
-            />
-          </mesh>
-        );
-      })}
-
-      {/* Glowing aura */}
-      <pointLight 
-        position={[0, 0.3, 0]} 
-        intensity={2} 
-        color="#ff6b00" 
-        distance={4} 
-      />
-      
-      <pointLight 
-        position={[0, 1, 0]} 
-        intensity={1.5} 
-        color="#ffd700" 
-        distance={3} 
-      />
-    </group>
-  );
-}
-
-// Alternative: Large Colonel Sanders Face (if you prefer)
-export function ColonelFace() {
-  const groupRef = useRef<THREE.Group>(null);
-
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.015;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.3;
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      {/* Large circular face */}
-      <mesh>
-        <cylinderGeometry args={[1.5, 1.5, 0.3, 32]} />
+      {/* LARGE White Bucket Body */}
+      <mesh position={[0, 0, 0]}>
+        <cylinderGeometry args={[2, 1.5, 3, 32]} />
         <meshStandardMaterial 
           color="#ffffff"
+          emissive="#ffffff"
+          emissiveIntensity={0.5}
           metalness={0.1}
-          roughness={0.4}
+          roughness={0.3}
         />
       </mesh>
 
-      {/* Red border */}
-      <mesh position={[0, 0, 0]}>
-        <torusGeometry args={[1.5, 0.15, 16, 32]} />
+      {/* Red Stripe Top */}
+      <mesh position={[0, 1.3, 0]}>
+        <cylinderGeometry args={[2.1, 2.1, 0.4, 32]} />
         <meshStandardMaterial 
           color="#e4002b"
           emissive="#e4002b"
-          emissiveIntensity={0.5}
+          emissiveIntensity={1}
         />
       </mesh>
 
-      {/* KFC Text */}
+      {/* Red Stripe Bottom */}
+      <mesh position={[0, -1.3, 0]}>
+        <cylinderGeometry args={[1.6, 1.6, 0.4, 32]} />
+        <meshStandardMaterial 
+          color="#e4002b"
+          emissive="#e4002b"
+          emissiveIntensity={1}
+        />
+      </mesh>
+
+      {/* GIANT KFC Text - Front */}
       <Text
-        position={[0, 0, 0.2]}
-        fontSize={0.6}
+        position={[0, 0, 2.1]}
+        fontSize={1.2}
         color="#e4002b"
         anchorX="center"
         anchorY="middle"
@@ -161,13 +65,73 @@ export function ColonelFace() {
         KFC
       </Text>
 
-      {/* Glow */}
-      <pointLight 
-        position={[0, 0, 0.5]} 
-        intensity={3} 
-        color="#e4002b" 
-        distance={5} 
-      />
+      {/* GIANT KFC Text - Back */}
+      <Text
+        position={[0, 0, -2.1]}
+        rotation={[0, Math.PI, 0]}
+        fontSize={1.2}
+        color="#e4002b"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        KFC
+      </Text>
+
+      {/* GIANT KFC Text - Right */}
+      <Text
+        position={[2.1, 0, 0]}
+        rotation={[0, Math.PI / 2, 0]}
+        fontSize={1.2}
+        color="#e4002b"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        KFC
+      </Text>
+
+      {/* GIANT KFC Text - Left */}
+      <Text
+        position={[-2.1, 0, 0]}
+        rotation={[0, -Math.PI / 2, 0]}
+        fontSize={1.2}
+        color="#e4002b"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        KFC
+      </Text>
+
+      {/* SUPER BRIGHT Glow Lights */}
+      <pointLight position={[0, 0, 2.5]} intensity={5} color="#e4002b" distance={8} />
+      <pointLight position={[0, 0, -2.5]} intensity={5} color="#ff0000" distance={8} />
+      <pointLight position={[2.5, 0, 0]} intensity={5} color="#ff6b00" distance={8} />
+      <pointLight position={[-2.5, 0, 0]} intensity={5} color="#ff0000" distance={8} />
+      <pointLight position={[0, 2, 0]} intensity={4} color="#ffffff" distance={6} />
+      <pointLight position={[0, -2, 0]} intensity={4} color="#e4002b" distance={6} />
+
+      {/* Orbiting Stars */}
+      {[...Array(12)].map((_, i) => {
+        const angle = (i / 12) * Math.PI * 2 + (Date.now() * 0.001);
+        const radius = 3.5;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = Math.sin(i * 0.5 + Date.now() * 0.002) * 1.5;
+        
+        return (
+          <mesh key={i} position={[x, y, z]}>
+            <sphereGeometry args={[0.2, 16, 16]} />
+            <meshBasicMaterial 
+              color="#ffd700"
+              transparent
+              opacity={0.9}
+            />
+            <pointLight intensity={2} color="#ffd700" distance={2} />
+          </mesh>
+        );
+      })}
     </group>
   );
 }

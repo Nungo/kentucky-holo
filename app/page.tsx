@@ -12,10 +12,10 @@ import { useState } from 'react';
 
 export default function Home() {
   const [show3D, setShow3D] = useState(false);
+  const [pyramidMode, setPyramidMode] = useState(false);
   const mode = useAppStore((state) => state.mode);
   const { userGeneration, setUserGeneration } = useMenuStore();
   
-  // Activate mode detection
   useModeDetection();
 
   const handleGenerationSelect = (gen: 'genalpha' | 'genz' | 'millennial' | 'genx' | 'boomer') => {
@@ -52,23 +52,17 @@ export default function Home() {
     <main 
       className={`relative w-full h-screen transition-colors duration-1000 ${
         mode === 'day' ? 'bg-sky-400' : 'bg-slate-900'
-      }`}
+      } ${pyramidMode ? 'pyramid-view' : ''}`}
     >
-      {/* Generation Selector Popup - SHOWS IN ALL MODES */}
       {!userGeneration && (
         <GenerationSelector onSelect={handleGenerationSelect} />
       )}
 
-      {/* 3D Scene */}
       <Scene />
       
-      {/* Day Mode Interactive UI */}
       {mode === 'day' && <DayModeUI />}
-      
-      {/* Night Mode UI */}
       {mode === 'night' && <NightModeUI />}
       
-      {/* Exit Button */}
       <button
         onClick={() => setShow3D(false)}
         className={`
@@ -82,9 +76,24 @@ export default function Home() {
         Exit
       </button>
 
-      {/* Mode Toggle Controls */}
-      <div className="absolute bottom-4 left-4 z-40">
+      <div className="absolute bottom-4 left-4 z-40 flex flex-col gap-2">
         <ModeToggle />
+        
+        {mode === 'night' && (
+          <button
+            onClick={() => setPyramidMode(!pyramidMode)}
+            className={`
+              px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all backdrop-blur-sm border
+              ${pyramidMode
+                ? 'bg-purple-500/50 border-purple-400 text-purple-100'
+                : 'bg-white/10 border-white/20 text-white/70'
+              }
+              hover:scale-105
+            `}
+          >
+            🔮 {pyramidMode ? 'Pyramid ON' : 'Pyramid OFF'}
+          </button>
+        )}
       </div>
     </main>
   );
