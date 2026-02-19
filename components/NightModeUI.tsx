@@ -1,7 +1,7 @@
 'use client';
 
 import { useStoryStore } from '@/store/useStoryStore';
-import { Moon, Globe, Sparkles, ChefHat, Wheat, Loader2, Volume2, VolumeX, RotateCcw, Music } from 'lucide-react';
+import { Moon, Globe, Sparkles, ChefHat, Wheat, Loader2, Volume2, VolumeX, RotateCcw, Music, Eye, EyeOff } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 const STORY_CATEGORIES = [
@@ -42,6 +42,7 @@ export function NightModeUI() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [voicesLoaded, setVoicesLoaded] = useState(false);
+  const [hologramMode, setHologramMode] = useState(false); // NEW: Hologram mode toggle
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -50,7 +51,7 @@ export function NightModeUI() {
     gains: GainNode[];
   }>({ oscillators: [], gains: [] });
 
-  // Load voices on mount
+  // Load voices
   useEffect(() => {
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
@@ -61,13 +62,12 @@ export function NightModeUI() {
 
     loadVoices();
     
-    // Chrome loads voices asynchronously
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = loadVoices;
     }
   }, []);
 
-  // Create ambient background music
+  // Create ambient music
   const createAmbientMusic = () => {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -128,13 +128,9 @@ export function NightModeUI() {
     }
   };
 
-  // IMPROVED: Get best female voice
   const getFemaleVoice = () => {
     const voices = speechSynthesis.getVoices();
     
-    console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
-
-    // Tier 1: Explicit female voices
     const femaleNames = [
       'samantha',
       'victoria',
@@ -152,30 +148,23 @@ export function NightModeUI() {
     for (const keyword of femaleNames) {
       const voice = voices.find(v => v.name.toLowerCase().includes(keyword));
       if (voice) {
-        console.log('Selected voice:', voice.name);
         return voice;
       }
     }
 
-    // Tier 2: UK/Australian English (often female by default)
     const ukVoice = voices.find(v => 
       v.lang.includes('en-GB') || 
       v.lang.includes('en-AU')
     );
     if (ukVoice) {
-      console.log('Selected UK/AU voice:', ukVoice.name);
       return ukVoice;
     }
 
-    // Tier 3: Any US English
     const usVoice = voices.find(v => v.lang.includes('en-US'));
     if (usVoice) {
-      console.log('Selected US voice:', usVoice.name);
       return usVoice;
     }
 
-    // Fallback
-    console.log('Using fallback voice');
     return voices[0];
   };
 
@@ -207,10 +196,9 @@ export function NightModeUI() {
         utterance.voice = femaleVoice;
       }
       
-      // ENHANCED: More feminine, soothing settings
-      utterance.rate = 0.7;        // Even slower for bedtime
-      utterance.pitch = 1.2;        // Higher pitch for more feminine tone
-      utterance.volume = 0.85;      // Slightly softer
+      utterance.rate = 0.7;
+      utterance.pitch = 1.2;
+      utterance.volume = 0.85;
       
       utterance.onend = () => {
         setIsSpeaking(false);
@@ -246,7 +234,6 @@ export function NightModeUI() {
         createAmbientMusic();
       }
 
-      // Wait a tiny bit for voices to be ready
       setTimeout(() => {
         startSpeech(text);
       }, 100);
@@ -305,6 +292,29 @@ export function NightModeUI() {
     clearStory();
   };
 
+  // HOLOGRAM MODE: Hide text, show only visuals + audio
+  if (currentStory && hologramMode) {
+    return (
+      <div className="absolute top-4 right-4 z-50 flex gap-2">
+        {/* Minimal controls for hologram mode */}
+        <button
+          onClick={() => setHologramMode(false)}
+          className="p-3 rounded-full bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 transition-all backdrop-blur-sm"
+          title="Show text"
+        >
+          <Eye className="w-5 h-5 text-purple-400" />
+        </button>
+        <button
+          onClick={handleClearStory}
+          className="p-3 rounded-full bg-black/60 hover:bg-black/80 border border-white/10 transition-all backdrop-blur-sm text-white text-sm px-4"
+        >
+          Exit Story
+        </button>
+      </div>
+    );
+  }
+
+  // NORMAL MODE: Show full text popup
   if (currentStory) {
     return (
       <div className="absolute inset-0 z-10 flex items-center justify-center p-4 sm:p-8">
@@ -316,12 +326,47 @@ export function NightModeUI() {
                 {currentStory.title}
               </h2>
             </div>
-            <button
-              onClick={handleClearStory}
-              className="text-gray-400 hover:text-white transition-colors text-sm"
-            >
-              Close
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Hologram Mode Toggle */}
+              <button
+                onClick={() => setHologramMode(true)}
+                className="text-gray-400 hover:text-white transition-colors"
+                title="Hologram mode (hide text)"
+              >
+                <EyeOff className="w-5 h-5" />
+              </button>
+              <button
+                onClick={toggleSpeech}
+                className="text-gray-400 hover:text-white transition-colors"
+                title={isSpeaking ? "Pause voice" : "Play voice"}
+              >
+                {isSpeaking ? (
+                  <Volume2 className="w-5 h-5 text-purple-400" />
+                ) : (
+                  <VolumeX className="w-5 h-5 text-purple-400" />
+                )}
+              </button>
+              <button
+                onClick={replayAudio}
+                className="text-gray-400 hover:text-white transition-colors"
+                title="Replay story audio"
+              >
+                <RotateCcw className="w-5 h-5 text-blue-400" />
+              </button>
+              <button
+                onClick={toggleMusic}
+                className="text-gray-400 hover:text-white transition-colors"
+                title={musicEnabled ? "Music on" : "Music off"}
+              >
+                <Music className={`w-5 h-5 ${musicEnabled ? 'text-green-400' : 'text-gray-400'}`} />
+              </button>
+              <button
+                onClick={handleClearStory}
+                className="text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                Close
+              </button>
+            </div>
           </div>
 
           <div className="text-gray-300 text-base sm:text-lg leading-relaxed space-y-4 min-h-[200px] max-h-[400px] overflow-y-auto">
@@ -333,43 +378,9 @@ export function NightModeUI() {
             )}
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-4">
-            <button
-              onClick={toggleSpeech}
-              className="p-3 rounded-full bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 transition-all"
-              title={isSpeaking ? "Pause voice" : "Play voice"}
-            >
-              {isSpeaking ? (
-                <Volume2 className="w-5 h-5 text-purple-400" />
-              ) : (
-                <VolumeX className="w-5 h-5 text-purple-400" />
-              )}
-            </button>
-
-            <button
-              onClick={replayAudio}
-              className="p-3 rounded-full bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 transition-all"
-              title="Replay story audio"
-            >
-              <RotateCcw className="w-5 h-5 text-blue-400" />
-            </button>
-
-            <button
-              onClick={toggleMusic}
-              className={`p-3 rounded-full border transition-all ${
-                musicEnabled
-                  ? 'bg-green-600/20 hover:bg-green-600/30 border-green-500/30'
-                  : 'bg-gray-600/20 hover:bg-gray-600/30 border-gray-500/30'
-              }`}
-              title={musicEnabled ? "Music on" : "Music off"}
-            >
-              <Music className={`w-5 h-5 ${musicEnabled ? 'text-green-400' : 'text-gray-400'}`} />
-            </button>
-          </div>
-
           <div className="mt-4 text-center text-xs text-gray-400">
             {isSpeaking && "🎙️ Reading story..."}
-            {!isSpeaking && !isTyping && "✨ Story complete"}
+            {!isSpeaking && !isTyping && "✨ Story complete • Click 👁️ for hologram mode"}
           </div>
 
           <button
